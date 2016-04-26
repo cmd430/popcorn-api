@@ -159,12 +159,6 @@ module.exports = {
   getShowGroup: (req, res) => {
     const data = req.query;
 
-    let query = {
-      imdb_id:{
-        $in: req.params.ids.split(',')
-      }
-    };
-
     if (!data.order) {
       data.order = -1;
     };
@@ -195,7 +189,7 @@ module.exports = {
     }
 
     if (data.sort === "updated") {
-      return Show.find(query, projection).sort(sort).skip(offset).limit(config.pageSize).exec().then((docs) => {
+      return Show.find(query, projection).sort(sort).limit(config.pageSize).exec().then((docs) => {
         return res.json(docs);
       }).catch((err) => {
         util.onError(err);
@@ -205,11 +199,13 @@ module.exports = {
       return Show.aggregate([{
         $sort: sort
       }, {
-        $match: query
+        $match: {
+          imdb_id:{
+            $in: req.params.ids.split(',')
+          }
+        }
       }, {
         $project: projection
-      }, {
-        $skip: offset
       }, {
         $limit: config.pageSize
       }]).exec().then((docs) => {

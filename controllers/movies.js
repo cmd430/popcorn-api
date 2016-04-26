@@ -152,12 +152,6 @@ module.exports = {
   /* Get all movies with ids, returns an array with each movie as an object */
   getMovieGroup: (req, res) => {
     const data = req.query;
-
-    let query = {
-      imdb_id:{
-        $in: req.params.ids.split(',')
-      }
-    };
 	
     if (!data.order) {
       data.order = -1;
@@ -189,7 +183,7 @@ module.exports = {
     }
 
     if (data.sort === "updated") {
-      return Movie.find(query, projection).sort(sort).skip(offset).limit(config.pageSize).exec().then((docs) => {
+      return Movie.find(query, projection).sort(sort).limit(config.pageSize).exec().then((docs) => {
         return res.json(docs);
       }).catch((err) => {
         util.onError(err);
@@ -199,11 +193,13 @@ module.exports = {
       return Movie.aggregate([{
         $sort: sort
       }, {
-        $match: query
+        $match: {
+          imdb_id:{
+            $in: req.params.ids.split(',')
+          }
+        }
       }, {
         $project: projection
-      }, {
-        $skip: offset
       }, {
         $limit: config.pageSize
       }]).exec().then((docs) => {
