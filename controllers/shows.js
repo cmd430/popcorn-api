@@ -159,6 +159,12 @@ module.exports = {
   getShowGroup: (req, res) => {
     const data = req.query;
 
+    let query = {
+      imdb_id:{
+        $in: req.params.ids.split(',')
+      }
+    };
+
     if (!data.order) {
       data.order = -1;
     };
@@ -199,11 +205,7 @@ module.exports = {
       return Show.aggregate([{
         $sort: sort
       }, {
-        $match: {
-          imdb_id:{
-            $in: req.params.ids.split(',')
-          }
-        }
+        $match: query
       }, {
         $project: projection
       }, {

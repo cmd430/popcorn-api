@@ -152,6 +152,12 @@ module.exports = {
   /* Get all movies with ids, returns an array with each movie as an object */
   getMovieGroup: (req, res) => {
     const data = req.query;
+
+    let query = {
+      imdb_id:{
+        $in: req.params.ids.split(',')
+      }
+    };
 	
     if (!data.order) {
       data.order = -1;
@@ -193,11 +199,7 @@ module.exports = {
       return Movie.aggregate([{
         $sort: sort
       }, {
-        $match: {
-          imdb_id:{
-            $in: req.params.ids.split(',')
-          }
-        }
+        $match: query
       }, {
         $project: projection
       }, {
